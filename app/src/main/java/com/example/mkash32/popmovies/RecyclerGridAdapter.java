@@ -1,6 +1,8 @@
 package com.example.mkash32.popmovies;
 
 import android.content.Context;
+import android.content.Intent;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.mkash32.popmovies.Activities.MovieDetailsActivity;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -40,8 +43,10 @@ public class RecyclerGridAdapter extends RecyclerView.Adapter<RecyclerGridAdapte
 
     @Override
     public void onBindViewHolder(RecyclerViewHolder holder, int position) {
-            holder.getTitle().setText(movies.get(position).getTitle());
-            String backDropURL = Constants.STANDARD_IMAGE_URLTEMP+movies.get(position).getImagePath();
+            Movie movie = movies.get(position);
+            holder.getTitle().setText(movie.getTitle());
+            holder.setMovie(movie);
+            String backDropURL = Constants.STANDARD_IMAGE_URLTEMP+movie.getImagePath();
             Picasso.with(c).load(backDropURL).into(holder.getBackDrop());
     }
 
@@ -50,15 +55,19 @@ public class RecyclerGridAdapter extends RecyclerView.Adapter<RecyclerGridAdapte
         return movies.size();
     }
 
-    public class RecyclerViewHolder extends RecyclerView.ViewHolder
+    public class RecyclerViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
     {
         private ImageView backDrop;
         private TextView title;
+        private CardView card;
+        private Movie movie;
 
         public RecyclerViewHolder(View itemView) {
             super(itemView);
             backDrop = (ImageView) itemView.findViewById(R.id.image_backdrop);
             title = (TextView) itemView.findViewById(R.id.tv_title);
+            card = (CardView) itemView.findViewById(R.id.card_view);
+            card.setOnClickListener(this);
         }
 
         public ImageView getBackDrop() {
@@ -75,6 +84,17 @@ public class RecyclerGridAdapter extends RecyclerView.Adapter<RecyclerGridAdapte
 
         public void setTitle(TextView title) {
             this.title = title;
+        }
+
+        public void setMovie(Movie movie) {
+            this.movie = movie;
+        }
+
+        @Override
+        public void onClick(View view) {
+            Intent intent = new Intent(c, MovieDetailsActivity.class);
+            intent.putExtra("id",movie.getId());
+            c.startActivity(intent);
         }
     }
 }

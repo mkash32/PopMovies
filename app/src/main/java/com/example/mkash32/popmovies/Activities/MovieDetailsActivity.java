@@ -1,18 +1,23 @@
-package com.example.mkash32.popmovies;
+package com.example.mkash32.popmovies.Activities;
 
-import android.content.Intent;
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.RatingBar;
+import android.widget.TextView;
+
+import com.example.mkash32.popmovies.Constants;
+import com.example.mkash32.popmovies.Movie;
+import com.example.mkash32.popmovies.R;
+import com.example.mkash32.popmovies.Utils;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,68 +30,47 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MovieDetailsActivity extends AppCompatActivity {
 
-    private ArrayList<Movie> movies = new ArrayList<Movie>();
-    private RecyclerView recyclerGrid;
-    private RecyclerGridAdapter recyclerAdapter;
-
+    private Movie movie;
+    private TextView title;
+    private RatingBar rating;
+    private ImageView image;
+    private Activity activity = this;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_movie_details);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        recyclerGrid = (RecyclerView) findViewById(R.id.recycler_grid);
-        recyclerGrid.setLayoutManager(new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL));
-
-        recyclerAdapter = new RecyclerGridAdapter(movies,this);
-        recyclerGrid.setAdapter(recyclerAdapter);
-
         setSupportActionBar(toolbar);
 
-        FetchMoviesTask fmt = new FetchMoviesTask();
-        fmt.execute();
+        String id = getIntent().getStringExtra("id");
 
+        title = (TextView) findViewById(R.id.movie_title);
+        rating = (RatingBar) findViewById(R.id.ratingBar);
+        image = (ImageView) findViewById(R.id.image_backdrop);
+
+        FetchMovieDetailsTask task = new FetchMovieDetailsTask();
+        task.execute(id);
     }
 
-    @Override
-    public boolean  onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        else if(id == R.id.action_about) {
-            Intent intent = new Intent(MainActivity.this,AboutActivity.class);
-            startActivity(intent);
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    public class FetchMoviesTask extends AsyncTask<Void,Void,ArrayList<Movie>>
+    public class FetchMovieDetailsTask extends AsyncTask<String,Void,Movie>
     {
+        @Override
+        protected void onPreExecute() {
+            //check for internet
+
+        }
 
         @Override
-        protected ArrayList<Movie>  doInBackground(Void... voids) {
+        protected Movie  doInBackground(String... ids) {
 
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
             String responseString = "";
             try {
-                URL url = new URL(Constants.GET_POP_MOVIES_URL);
+                URL url = new URL(Utils.getMovieDetailsURL(ids[0]));
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
@@ -131,12 +115,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            //Converting string into JSON and parsing into Movie Objects
+            //Converting string into JSON and parsing into Movie Object
             try {
 
                 JSONObject js = new JSONObject(responseString);
-                ArrayList<Movie> movies = Utils.parsePopularMovies(js);
-                return movies;
+                Movie movie = Utils.parseMovieDetails(js);
+                return movie;
 
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -146,11 +130,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(ArrayList<Movie> result) {
+        protected void onPostExecute(Movie result) {
             super.onPostExecute(result);
-            movies = result;
-            recyclerAdapter.setMovies(result);
-            recyclerAdapter.notifyDataSetChanged();
+            movie = result;
+            title.setText(movie.getTitle());
+            rating.setRating((float) (movie.getPopularity()/20));
+            String backDropURL = Constants.STANDARD_IMAGE_URLTEMP+movie.getImagePath();
+            Picasso.with(activity).load(backDropURL).into(image);
+
         }
     }
 }

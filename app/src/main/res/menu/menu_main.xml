@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.example.mkash32.popmovies.MainActivity">
+    tools:context=".Activities.MainActivity">
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
@@ -12,4 +12,17 @@
         android:orderInCategory="100"
         android:title="@string/action_about"
         app:showAsAction="never" />
+    <item
+        android:icon="@drawable/ic_action_sort"
+        app:showAsAction="always"
+        android:title="Sort">
+        <menu>
+            <item
+                android:id="@+id/movieSortPop"
+                android:title="Sort by Popularity" />
+            <item
+                android:id="@+id/movieSortRating"
+                android:title="Sort by Rating" />
+        </menu>
+    </item>
 </menu>
