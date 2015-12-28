@@ -1,8 +1,14 @@
 package com.example.mkash32.popmovies.Activities;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -10,11 +16,13 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import com.example.mkash32.popmovies.Constants;
 import com.example.mkash32.popmovies.Movie;
 import com.example.mkash32.popmovies.R;
-import com.example.mkash32.popmovies.RecyclerGridAdapter;
+import com.example.mkash32.popmovies.Adapters.RecyclerGridAdapter;
 import com.example.mkash32.popmovies.Utils;
 
 import org.json.JSONException;
@@ -28,11 +36,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener{
 
     private ArrayList<Movie> movies = new ArrayList<Movie>();
     private RecyclerView recyclerGrid;
+    private TextView errorTV;
     private RecyclerGridAdapter recyclerAdapter;
+    private SwipeRefreshLayout refreshLayout;
     private boolean currentSortPop = true;  //current sorted state, initially will be sorted by popularity
 
     @Override
@@ -40,16 +50,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        errorTV = (TextView) findViewById(R.id.tv_error);
         recyclerGrid = (RecyclerView) findViewById(R.id.recycler_grid);
-        recyclerGrid.setLayoutManager(new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL));
+        recyclerGrid.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
 
+        movies.size();
         recyclerAdapter = new RecyclerGridAdapter(movies,this);
         recyclerGrid.setAdapter(recyclerAdapter);
 
+        refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+        refreshLayout.setOnRefreshListener(this);
+        refreshLayout.setColorSchemeResources(R.color.colorAccent);
+
         setSupportActionBar(toolbar);
 
-        FetchMoviesTask fmt = new FetchMoviesTask();
-        fmt.execute(Constants.GET_MOVIES_POP_URL);
+        fetchMovies(Constants.GET_MOVIES_POP_URL);
 
     }
 
@@ -76,25 +91,42 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             return true;
         }
+        else if(id == R.id.action_refresh){
+            refreshLayout.setRefreshing(true);
+            onRefresh();
+        }
         else if(id == R.id.movieSortPop && !currentSortPop){
-            FetchMoviesTask task = new FetchMoviesTask();
-            task.execute(Constants.GET_MOVIES_POP_URL);
+            fetchMovies(Constants.GET_MOVIES_POP_URL);
         }
         else if(id == R.id.movieSortRating){
-            FetchMoviesTask task = new FetchMoviesTask();
-            task.execute(Constants.GET_MOVIES_RATED_URL);
+            fetchMovies(Constants.GET_MOVIES_RATED_URL);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    private void fetchMovies(final String url){
+        if(!Utils.isNetworkAvailable(this)){
+            refreshLayout.setRefreshing(false);
+            errorTV.setVisibility(View.VISIBLE);
+        }
+        else {
+            errorTV.setVisibility(View.GONE);
+            FetchMoviesTask fmt = new FetchMoviesTask();
+            fmt.execute(url);
+        }
+    }
+
+    @Override
+    public void onRefresh() {
+        String url = currentSortPop?Constants.GET_MOVIES_POP_URL:Constants.GET_MOVIES_RATED_URL;
+        fetchMovies(url);
+    }
+
     public class FetchMoviesTask extends AsyncTask<String,Void,ArrayList<Movie>>
     {
-
         @Override
         protected void onPreExecute() {
-            //check for internet
-
         }
 
         @Override
@@ -103,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
             String responseString = "";
+
             try {
                 URL url = new URL(urls[0]);
 
@@ -113,26 +146,19 @@ public class MainActivity extends AppCompatActivity {
                 InputStream inputStream = urlConnection.getInputStream();
                 StringBuffer buffer = new StringBuffer();
 
-                if (inputStream == null) {
+                if (inputStream == null)
                     return null;
-                }
 
                 reader = new BufferedReader(new InputStreamReader(inputStream));
 
                 String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
+                while ((line = reader.readLine()) != null)
                     buffer.append(line + "\n");
-                }
 
-                if (buffer.length() == 0) {
+                if (buffer.length() == 0)
                     return null;
-                }
 
                 responseString = buffer.toString();
-
             } catch (IOException e) {
                 Log.e("PlaceholderFragment", "Error ", e);
                 return null;
@@ -147,7 +173,6 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("PlaceholderFragment", "Error closing stream", e);
                     }
                 }
-                Log.d("URL",urls[0]);
                 if(urls[0].equals(Constants.GET_MOVIES_POP_URL))
                     currentSortPop = true;
                 else
@@ -174,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
             movies = result;
             recyclerAdapter.setMovies(result);
             recyclerAdapter.notifyDataSetChanged();
+            refreshLayout.setRefreshing(false);
         }
     }
 }

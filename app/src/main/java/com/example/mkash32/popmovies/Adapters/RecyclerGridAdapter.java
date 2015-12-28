@@ -1,9 +1,10 @@
-package com.example.mkash32.popmovies;
+package com.example.mkash32.popmovies.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,10 +13,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.mkash32.popmovies.Activities.MovieDetailsActivity;
+import com.example.mkash32.popmovies.Constants;
+import com.example.mkash32.popmovies.Movie;
+import com.example.mkash32.popmovies.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.zip.Inflater;
 
 /**
  * Created by mkash32 on 24/12/15.
@@ -26,6 +29,8 @@ public class RecyclerGridAdapter extends RecyclerView.Adapter<RecyclerGridAdapte
     private Context c;
 
     public RecyclerGridAdapter(ArrayList<Movie> movies, Context c) {
+        if(movies == null)
+            Log.d("Movies","movies is null");
         this.movies = movies;
         this.c = c;
     }
@@ -94,6 +99,8 @@ public class RecyclerGridAdapter extends RecyclerView.Adapter<RecyclerGridAdapte
         public void onClick(View view) {
             Intent intent = new Intent(c, MovieDetailsActivity.class);
             intent.putExtra("id",movie.getId());
+            intent.putExtra("title",movie.getTitle());
+            intent.putExtra("url",Constants.WIDE_IMAGE_URLTEMP+movie.getPosterPath());
             c.startActivity(intent);
         }
     }

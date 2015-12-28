@@ -19,6 +19,7 @@ public class Constants {
 
     public static String IMAGE_BASE_ADDRESS = "http://image.tmdb.org/t/p";
     public static String STANDARD_WIDTH = "/w185";
+    public static String WIDE = "/w342";
 
 
     //Final URL tempelates
@@ -28,5 +29,6 @@ public class Constants {
     public static String GET_MOVIE_DETAILS = MOVIE_BASE_ADDRESS+FIND_MOVIE+"?"+API_KEY; //need to replace # with movie id, done by Util method
 
     public static String STANDARD_IMAGE_URLTEMP= IMAGE_BASE_ADDRESS+STANDARD_WIDTH;
+    public static String WIDE_IMAGE_URLTEMP= IMAGE_BASE_ADDRESS+WIDE;
 
 }

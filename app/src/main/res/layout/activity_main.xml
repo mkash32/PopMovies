@@ -20,15 +20,33 @@
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
-    <RelativeLayout
+     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <android.support.v7.widget.RecyclerView
+
+        <android.support.v4.widget.SwipeRefreshLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/swipe_refresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id = "@+id/recycler_grid"
-            android:layout_marginTop="60dp"/>
+            android:layout_marginTop="55dp">
+
+            <android.support.v7.widget.RecyclerView
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id = "@+id/recycler_grid" />
+        </android.support.v4.widget.SwipeRefreshLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/error_offline"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            android:textSize="20sp"
+            android:id="@+id/tv_error"/>
 
         <ImageView
             android:id="@+id/tmdb"
@@ -38,8 +56,9 @@
             android:layout_centerInParent="true"
             android:src="@drawable/powered_by_tmdb"
             android:scaleType="centerInside"
-            android:layout_alignBottom="@id/recycler_grid"
+            android:layout_alignBottom="@id/swipe_refresh"
             android:adjustViewBounds="true"/>
 
     </RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>
+	

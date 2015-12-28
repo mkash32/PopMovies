@@ -1,5 +1,9 @@
 package com.example.mkash32.popmovies;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,8 +31,10 @@ public class Utils {
                 String title = movie.getString("title");
                 double popularity = movie.getDouble("popularity");
                 String imagePath = movie.getString("backdrop_path");
+                String posterPath = movie.getString("poster_path");
 
-                movies.add(new Movie(id,title,imagePath,releaseDate,popularity));
+
+                movies.add(new Movie(id,title,imagePath,posterPath,releaseDate,popularity));
             }
 
             return movies;
@@ -47,10 +53,18 @@ public class Utils {
                 String id = ""+movieJSON.getInt("id");
                 String title = movieJSON.getString("title");
                 double popularity = movieJSON.getDouble("popularity");
+                double vote_avg = movieJSON.getDouble("vote_average");
                 String imagePath = movieJSON.getString("backdrop_path");
                 String posterPath = movieJSON.getString("poster_path");
                 String overview = movieJSON.getString("overview");
-                movie = new Movie(id,title,imagePath,releaseDate,posterPath,overview,popularity);
+                int runtime;
+                try {
+                    runtime = movieJSON.getInt("runtime");
+                }catch(JSONException e)
+                {
+                    runtime= 0;
+                }
+                movie = new Movie(id,title,imagePath,releaseDate,posterPath,overview,popularity,vote_avg,runtime);
                 return movie;
 
         } catch (JSONException e) {
@@ -64,5 +78,23 @@ public class Utils {
     {
         String url = Constants.GET_MOVIE_DETAILS;
         return url.replace("#",id);
+    }
+
+    public static String formatText(Movie movie) {
+        String output = "";
+        output += "Release Date: " + movie.getReleaseDate()+"\n";
+        output += "User Rating : " + movie.getVote_avg()+"\n";
+        output += "Popularity  : " + movie.getPopularity()+"\n";
+        if(movie.getRuntime() !=0 )
+            output += "Runtime     : " + movie.getRuntime()+" min.\n";
+
+        return output;
+    }
+
+    public static boolean isNetworkAvailable(Context c) {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

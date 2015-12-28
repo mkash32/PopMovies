@@ -1,11 +1,15 @@
 package com.example.mkash32.popmovies.Activities;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -13,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.example.mkash32.popmovies.Adapters.MovieDetailsAdapter;
 import com.example.mkash32.popmovies.Constants;
 import com.example.mkash32.popmovies.Movie;
 import com.example.mkash32.popmovies.R;
@@ -33,10 +38,9 @@ import java.util.ArrayList;
 public class MovieDetailsActivity extends AppCompatActivity {
 
     private Movie movie;
-    private TextView title;
-    private RatingBar rating;
     private ImageView image;
-    private Activity activity = this;
+    private MovieDetailsAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,15 +49,43 @@ public class MovieDetailsActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        this.setTitle(getIntent().getStringExtra("title"));
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         String id = getIntent().getStringExtra("id");
 
-        title = (TextView) findViewById(R.id.movie_title);
-        rating = (RatingBar) findViewById(R.id.ratingBar);
-        image = (ImageView) findViewById(R.id.image_backdrop);
+        image = (ImageView) findViewById(R.id.image_parallax);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        FetchMovieDetailsTask task = new FetchMovieDetailsTask();
-        task.execute(id);
+        adapter = new MovieDetailsAdapter(new Movie(),this);
+        recyclerView.setAdapter(adapter);
+
+        Picasso.with(this).load(getIntent().getStringExtra("url")).into(image);
+
+        fetchMovieDetails(id);
     }
+
+    private void fetchMovieDetails(final String id) {
+        //close activity if there is no internet connection
+        if(!Utils.isNetworkAvailable(this)){
+            new AlertDialog.Builder(this)
+                    .setTitle("Connection problem")
+                    .setMessage("Please fix your connection and try again")
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    })
+                    .setIcon(R.drawable.ic_action_offline)
+                    .show();
+        }
+        else {
+            FetchMovieDetailsTask task = new FetchMovieDetailsTask();
+            task.execute(id);
+        }
+    }
+
 
     public class FetchMovieDetailsTask extends AsyncTask<String,Void,Movie>
     {
@@ -87,9 +119,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
                     buffer.append(line + "\n");
                 }
 
@@ -133,11 +162,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
         protected void onPostExecute(Movie result) {
             super.onPostExecute(result);
             movie = result;
-            title.setText(movie.getTitle());
-            rating.setRating((float) (movie.getPopularity()/20));
-            String backDropURL = Constants.STANDARD_IMAGE_URLTEMP+movie.getImagePath();
-            Picasso.with(activity).load(backDropURL).into(image);
-
+            adapter.setMovie(movie);
+            adapter.notifyDataSetChanged();
         }
     }
 }
