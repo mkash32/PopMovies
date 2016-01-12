@@ -1,12 +1,16 @@
 package com.example.mkash32.popmovies;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.example.mkash32.popmovies.MovieDBContract;
 
 import java.util.ArrayList;
 
@@ -97,4 +101,55 @@ public class Utils {
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
+
+    public static ArrayList<Movie> readMoviesFromCursor(Cursor c){
+        ArrayList<Movie> movies = new ArrayList<Movie>();
+
+        while(c.moveToNext())
+        {
+            int _id = c.getInt(0);
+            String id = ""+_id;
+            String title = c.getString(1);
+            String image = c.getString(2);
+            String poster = c.getString(3);
+            String releaseDate = c.getString(4);
+            String overview =    c.getString(5);
+            int runtime = c.getInt(6);
+            float vote_avg = c.getFloat(7);
+            float popularity = c.getFloat(8);
+            movies.add(new Movie(id,title,image,poster,releaseDate,overview,popularity,vote_avg,runtime));
+        }
+
+        c.close();
+
+        return movies;
+    }
+
+    public static ContentValues[] prepareToStoreMovies(ArrayList<Movie> movies)
+    {
+        ContentValues[] values = new ContentValues[movies.size()];
+
+        for(int i=0;i<movies.size();i++)
+        {
+                ContentValues value = new ContentValues();
+                Movie movie = movies.get(i);
+                value.put(MovieDBContract.MovieEntry.COLUMN_ID,movie.getId());
+                value.put(MovieDBContract.MovieEntry.COLUMN_TITLE,movie.getTitle());
+                value.put(MovieDBContract.MovieEntry.COLUMN_IMAGE,movie.getImagePath());
+                value.put(MovieDBContract.MovieEntry.COLUMN_POSTER ,movie.getPosterPath());
+                value.put(MovieDBContract.MovieEntry.COLUMN_RELEASE_DATE,movie.getReleaseDate());
+                value.put(MovieDBContract.MovieEntry.COLUMN_OVERVIEW,movie.getOverview());
+                value.put(MovieDBContract.MovieEntry.COLUMN_RUNTIME,movie.getRuntime());
+                value.put(MovieDBContract.MovieEntry.COLUMN_VOTE,movie.getVote_avg());
+                value.put(MovieDBContract.MovieEntry.COLUMN_POPULARITY,movie.getPopularity());
+
+                values[i] = value;
+        }
+
+        return values;
+    }
+
+
+
+
 }

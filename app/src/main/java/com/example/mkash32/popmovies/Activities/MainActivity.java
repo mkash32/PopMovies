@@ -2,8 +2,10 @@ package com.example.mkash32.popmovies.Activities;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -21,6 +23,7 @@ import android.widget.TextView;
 
 import com.example.mkash32.popmovies.Constants;
 import com.example.mkash32.popmovies.Movie;
+import com.example.mkash32.popmovies.MovieDBContract;
 import com.example.mkash32.popmovies.R;
 import com.example.mkash32.popmovies.Adapters.RecyclerGridAdapter;
 import com.example.mkash32.popmovies.Utils;
@@ -64,7 +67,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         setSupportActionBar(toolbar);
 
-        fetchMovies(Constants.GET_MOVIES_POP_URL);
+        //fetchMovies(Constants.GET_MOVIES_POP_URL);
+        FetchMoviesDBTask task = new FetchMoviesDBTask();
+        task.execute();
 
     }
 
@@ -200,6 +205,31 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             recyclerAdapter.setMovies(result);
             recyclerAdapter.notifyDataSetChanged();
             refreshLayout.setRefreshing(false);
+        }
+    }
+
+    public class StoreMoviesDBTask extends AsyncTask<ArrayList<Movie>,Void,ArrayList<Movie>>
+    {
+        @Override
+        protected void onPreExecute() {
+
+        }
+
+        @Override
+        protected ArrayList<Movie>  doInBackground(ArrayList<Movie>... movieLists) {
+
+            int stored = getContentResolver().bulkInsert(MovieDBContract.MovieEntry.CONTENT_URI,Utils.prepareToStoreMovies(movieLists[0]));
+            Log.d("AAKASH","Number of stored "+stored);
+
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Movie> result) {
+            super.onPostExecute(result);
+            movies = result;
+//            recyclerAdapter.setMovies(result);
+//            recyclerAdapter.notifyDataSetChanged();
+//            refreshLayout.setRefreshing(false);
         }
     }
 }
