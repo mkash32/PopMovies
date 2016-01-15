@@ -5,12 +5,13 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.example.mkash32.popmovies.MovieDBContract;
+import com.example.mkash32.popmovies.Data.MovieDBContract;
 
 import java.util.ArrayList;
 
@@ -69,6 +70,17 @@ public class Utils {
                     runtime= 0;
                 }
                 movie = new Movie(id,title,imagePath,releaseDate,posterPath,overview,popularity,vote_avg,runtime);
+
+                //Parse trailers and store into array list 'trailers' in the movie object
+                JSONArray videos = movieJSON.getJSONObject("videos").getJSONArray("results");
+                ArrayList<String> trailers = movie.getTrailers();
+                for(int i=0;i<videos.length();i++)
+                {
+                    JSONObject trailer = videos.getJSONObject(i);
+                    String trailerString = trailer.getString("name")+";"+trailer.getString("key");
+                    trailers.add(trailerString);
+                }
+
                 return movie;
 
         } catch (JSONException e) {
@@ -81,6 +93,18 @@ public class Utils {
     public static String getMovieDetailsURL(String id)
     {
         String url = Constants.GET_MOVIE_DETAILS;
+        return url.replace("#",id);
+    }
+
+    public static String getTrailersURL(String id)
+    {
+        String url = Constants.GET_TRAILERS;
+        return url.replace("#",id);
+    }
+
+    public static String getReviewsURL(String id)
+    {
+        String url = Constants.GET_REVIEWS;
         return url.replace("#",id);
     }
 

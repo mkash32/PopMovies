@@ -1,4 +1,4 @@
-package com.example.mkash32.popmovies;
+package com.example.mkash32.popmovies.Data;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;

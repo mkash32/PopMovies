@@ -1,16 +1,9 @@
 package com.example.mkash32.popmovies.Activities;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -23,7 +16,7 @@ import android.widget.TextView;
 
 import com.example.mkash32.popmovies.Constants;
 import com.example.mkash32.popmovies.Movie;
-import com.example.mkash32.popmovies.MovieDBContract;
+import com.example.mkash32.popmovies.Data.MovieDBContract;
 import com.example.mkash32.popmovies.R;
 import com.example.mkash32.popmovies.Adapters.RecyclerGridAdapter;
 import com.example.mkash32.popmovies.Utils;
@@ -67,10 +60,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         setSupportActionBar(toolbar);
 
-        //fetchMovies(Constants.GET_MOVIES_POP_URL);
-        FetchMoviesDBTask task = new FetchMoviesDBTask();
-        task.execute();
-
+        fetchMovies(Constants.GET_MOVIES_POP_URL);
     }
 
     @Override
@@ -220,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
             int stored = getContentResolver().bulkInsert(MovieDBContract.MovieEntry.CONTENT_URI,Utils.prepareToStoreMovies(movieLists[0]));
             Log.d("AAKASH","Number of stored "+stored);
-
+            return null;    //change later
         }
 
         @Override

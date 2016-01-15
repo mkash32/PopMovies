@@ -3,7 +3,6 @@ package com.example.mkash32.popmovies.Activities;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.example.mkash32.popmovies.MovieDBHelper;
 import com.example.mkash32.popmovies.R;
 
 public class AboutActivity extends AppCompatActivity {

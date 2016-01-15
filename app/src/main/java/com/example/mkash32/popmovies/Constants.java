@@ -16,6 +16,7 @@ public class Constants {
         public static String SORT_BY_POPULARITY = "popularity.desc";
         public static String SORT_BY_HIGHEST_RATED = "vote_average.desc";
     public static String FIND_MOVIE = "/movie/#";
+        public static String APPEND_TO_RESPONSE = "&append_to_response=videos";
 
     public static String IMAGE_BASE_ADDRESS = "http://image.tmdb.org/t/p";
     public static String STANDARD_WIDTH = "/w185";
@@ -26,9 +27,14 @@ public class Constants {
     public static String GET_MOVIES_POP_URL = MOVIE_BASE_ADDRESS+POPULAR_MOVIES+SORT_BY_POPULARITY+"&"+API_KEY;
     public static String GET_MOVIES_RATED_URL = MOVIE_BASE_ADDRESS+POPULAR_MOVIES+SORT_BY_HIGHEST_RATED+"&"+API_KEY;
 
-    public static String GET_MOVIE_DETAILS = MOVIE_BASE_ADDRESS+FIND_MOVIE+"?"+API_KEY; //need to replace # with movie id, done by Util method
+    public static String GET_TRAILERS = MOVIE_BASE_ADDRESS+FIND_MOVIE+"/videos?"+API_KEY;
+    public static String GET_REVIEWS = MOVIE_BASE_ADDRESS+FIND_MOVIE+"/reviews?"+API_KEY;
+
+    public static String GET_MOVIE_DETAILS = MOVIE_BASE_ADDRESS+FIND_MOVIE+"?"+API_KEY+APPEND_TO_RESPONSE; //need to replace # with movie id, done by Util method
 
     public static String STANDARD_IMAGE_URLTEMP= IMAGE_BASE_ADDRESS+STANDARD_WIDTH;
     public static String WIDE_IMAGE_URLTEMP= IMAGE_BASE_ADDRESS+WIDE;
+
+    public static String TRAILER_YOUTUBE = "https://youtube.com/watch?v=";
 
 }

@@ -1,5 +1,7 @@
 package com.example.mkash32.popmovies;
 
+import java.util.ArrayList;
+
 /**
  * Created by mkash32 on 24/12/15.
  */
@@ -9,6 +11,7 @@ public class Movie {
     private String posterPath, overview;
     private double popularity,vote_avg;
     private int runtime;
+    private ArrayList<String> trailers = new ArrayList<String>();     //Strings will be of the form name;key, seperation by semicolons
 
     public Movie() {
 
@@ -105,5 +108,13 @@ public class Movie {
 
     public void setRuntime(int runtime) {
         this.runtime = runtime;
+    }
+
+    public ArrayList<String> getTrailers() {
+        return trailers;
+    }
+
+    public void setTrailers(ArrayList<String> trailers) {
+        this.trailers = trailers;
     }
 }

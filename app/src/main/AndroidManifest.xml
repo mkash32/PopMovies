@@ -39,7 +39,7 @@
         </activity>
 
         <provider
-            android:name=".MovieProvider"
+            android:name=".Data.MovieProvider"
             android:authorities="com.example.mkash32.popmovies"
             android:enabled="true"
             android:exported="true"></provider>

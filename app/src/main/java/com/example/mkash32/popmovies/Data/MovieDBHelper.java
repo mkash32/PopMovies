@@ -1,7 +1,6 @@
-package com.example.mkash32.popmovies;
+package com.example.mkash32.popmovies.Data;
 
 import android.content.Context;
-import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 

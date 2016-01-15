@@ -103,7 +103,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
             String responseString = "";
             try {
                 URL url = new URL(Utils.getMovieDetailsURL(ids[0]));
-
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
