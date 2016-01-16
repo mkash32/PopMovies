@@ -36,5 +36,6 @@ public class Constants {
     public static String WIDE_IMAGE_URLTEMP= IMAGE_BASE_ADDRESS+WIDE;
 
     public static String TRAILER_YOUTUBE = "https://youtube.com/watch?v=";
+    public static String THUMBNAIL_YOUTUBE = "http://img.youtube.com/vi/#/default.jpg"; //insert video id
 
 }

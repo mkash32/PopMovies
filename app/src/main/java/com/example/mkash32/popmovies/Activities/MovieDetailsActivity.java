@@ -2,19 +2,25 @@ package com.example.mkash32.popmovies.Activities;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.ActionProvider;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RatingBar;
+import android.widget.ShareActionProvider;
 import android.widget.TextView;
 
 import com.example.mkash32.popmovies.Adapters.MovieDetailsAdapter;
@@ -40,6 +46,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private Movie movie;
     private ImageView image;
     private MovieDetailsAdapter adapter;
+    private android.support.v7.widget.ShareActionProvider shareActionProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,13 +65,40 @@ public class MovieDetailsActivity extends AppCompatActivity {
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        adapter = new MovieDetailsAdapter(new Movie(),this);
+        adapter = new MovieDetailsAdapter(new Movie(), this);
         recyclerView.setAdapter(adapter);
 
         Picasso.with(this).load(getIntent().getStringExtra("url")).into(image);
 
         fetchMovieDetails(id);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_movie_details, menu);
+
+        //shareActionProvider = (ShareActionProvider) menu.findItem(R.id.action_share).getActionProvider();
+        MenuItem shareItem = menu.findItem(R.id.action_share);
+        shareActionProvider = (android.support.v7.widget.ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
+
+        return true;
+    }
+
+    private void setShareIntent()
+    {
+        if(shareActionProvider != null){
+            String[] trailer = movie.getTrailers().get(0).split(";");
+            Intent shareIntent = new Intent();
+            shareIntent.setType("text/plain");
+            shareIntent.setAction(Intent.ACTION_SEND);
+            shareIntent.putExtra(Intent.EXTRA_TEXT,Constants.TRAILER_YOUTUBE+trailer[1]);
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT,"Share Trailer");
+
+            shareActionProvider.setShareIntent(shareIntent);
+        }
+    }
+
 
     private void fetchMovieDetails(final String id) {
         //close activity if there is no internet connection
@@ -85,6 +119,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
             task.execute(id);
         }
     }
+
+
 
 
     public class FetchMovieDetailsTask extends AsyncTask<String,Void,Movie>
@@ -163,6 +199,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             movie = result;
             adapter.setMovie(movie);
             adapter.notifyDataSetChanged();
+            setShareIntent();
         }
     }
 }

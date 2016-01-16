@@ -97,12 +97,15 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
 
                 holder.getTrailer().setText(info[0]);
 
-                holder.getTrailerCard().setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        c.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.TRAILER_YOUTUBE + info[1])));
-                    }
-                });
+                Picasso.with(c).load(Utils.getVideoThumbnail(info[1])).into(holder.getVideoThumbnail());
+
+
+            holder.getTrailerCard().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    c.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.TRAILER_YOUTUBE + info[1])));
+                }
+            });
         }
     }
 
@@ -139,6 +142,7 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
     {
         private TextView title,content,trailer;
         private CardView titleCard,contentCard,trailerCard;
+        private ImageView videoThumbnail;
 
         public RecyclerViewHolder(View itemView) {
             super(itemView);
@@ -148,6 +152,7 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
             contentCard = (CardView) itemView.findViewById(R.id.content_card);
             trailerCard = (CardView) itemView.findViewById(R.id.trailer_card);
             trailer = (TextView) itemView.findViewById(R.id.li_trailer);
+            videoThumbnail = (ImageView) itemView.findViewById(R.id.video_thumbnail);
         }
 
         public TextView getTitle() {
@@ -172,6 +177,10 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
 
         public CardView getTrailerCard() {
             return trailerCard;
+        }
+
+        public ImageView getVideoThumbnail() {
+            return videoThumbnail;
         }
     }
 }

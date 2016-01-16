@@ -108,6 +108,12 @@ public class Utils {
         return url.replace("#",id);
     }
 
+    public static String getVideoThumbnail(String id)
+    {
+        String url = Constants.THUMBNAIL_YOUTUBE.replace("#",id);
+        return url;
+    }
+
     public static String formatText(Movie movie) {
         String output = "";
         output += "Release Date: " + movie.getReleaseDate()+"\n";
