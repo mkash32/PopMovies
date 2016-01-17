@@ -35,11 +35,15 @@ public class Utils {
                 String id = ""+movie.getInt("id");
                 String title = movie.getString("title");
                 double popularity = movie.getDouble("popularity");
+
                 String imagePath = movie.getString("backdrop_path");
                 String posterPath = movie.getString("poster_path");
 
+                String overview = movie.getString("overview");
+                double vote_avg = movie.getDouble("vote_average");
 
-                movies.add(new Movie(id,title,imagePath,posterPath,releaseDate,popularity));
+
+                movies.add(new Movie(id,title,imagePath,releaseDate,posterPath,overview,popularity,vote_avg,-1));
             }
 
             return movies;
@@ -67,7 +71,7 @@ public class Utils {
                     runtime = movieJSON.getInt("runtime");
                 }catch(JSONException e)
                 {
-                    runtime= 0;
+                    runtime= -1;
                 }
                 movie = new Movie(id,title,imagePath,releaseDate,posterPath,overview,popularity,vote_avg,runtime);
 
@@ -119,7 +123,7 @@ public class Utils {
         output += "Release Date: " + movie.getReleaseDate()+"\n";
         output += "User Rating : " + movie.getVote_avg()+"\n";
         output += "Popularity  : " + movie.getPopularity()+"\n";
-        if(movie.getRuntime() !=0 )
+        if(movie.getRuntime() != -1 )
             output += "Runtime     : " + movie.getRuntime()+" min.\n";
 
         return output;
@@ -147,7 +151,7 @@ public class Utils {
             int runtime = c.getInt(6);
             float vote_avg = c.getFloat(7);
             float popularity = c.getFloat(8);
-            movies.add(new Movie(id,title,image,poster,releaseDate,overview,popularity,vote_avg,runtime));
+            movies.add(new Movie(id,title,image,releaseDate,poster,overview,popularity,vote_avg,runtime));
         }
 
         c.close();
@@ -155,9 +159,15 @@ public class Utils {
         return movies;
     }
 
-    public static ContentValues[] prepareToStoreMovies(ArrayList<Movie> movies)
+    public static Movie readMovieFromCursor(Cursor c)
+    {
+        return readMoviesFromCursor(c).get(0);
+    }
+
+    public static ContentValues[] prepareToStoreMovies(ArrayList<Movie> movies, boolean sortPop)
     {
         ContentValues[] values = new ContentValues[movies.size()];
+        int sortPopInt = sortPop?1:0;
 
         for(int i=0;i<movies.size();i++)
         {
@@ -172,6 +182,7 @@ public class Utils {
                 value.put(MovieDBContract.MovieEntry.COLUMN_RUNTIME,movie.getRuntime());
                 value.put(MovieDBContract.MovieEntry.COLUMN_VOTE,movie.getVote_avg());
                 value.put(MovieDBContract.MovieEntry.COLUMN_POPULARITY,movie.getPopularity());
+                value.put(MovieDBContract.MovieEntry.COLUMN_SORTPOP,sortPopInt);
 
                 values[i] = value;
         }

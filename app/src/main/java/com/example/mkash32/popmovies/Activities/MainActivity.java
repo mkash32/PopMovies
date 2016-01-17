@@ -1,8 +1,12 @@
 package com.example.mkash32.popmovies.Activities;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -13,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.mkash32.popmovies.Constants;
 import com.example.mkash32.popmovies.Movie;
@@ -35,6 +40,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener{
 
     private ArrayList<Movie> movies = new ArrayList<Movie>();
+    private Activity activity;
     private RecyclerView recyclerGrid;
     private TextView errorTV;
     private RecyclerGridAdapter recyclerAdapter;
@@ -45,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        activity = this;
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         errorTV = (TextView) findViewById(R.id.tv_error);
         recyclerGrid = (RecyclerView) findViewById(R.id.recycler_grid);
@@ -103,10 +110,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private void fetchMovies(final String url){
         if(!Utils.isNetworkAvailable(this)){
             refreshLayout.setRefreshing(false);
-            errorTV.setVisibility(View.VISIBLE);
+            Snackbar.make(findViewById(android.R.id.content), "No internet connection", Snackbar.LENGTH_LONG)
+                    .show();
+            ReadMoviesDBTask readMoviesFromDB = new ReadMoviesDBTask();
+            readMoviesFromDB.execute(url);
         }
         else {
-            errorTV.setVisibility(View.GONE);
             FetchMoviesTask fmt = new FetchMoviesTask();
             fmt.execute(url);
         }
@@ -133,7 +142,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
             try {
                 URL url = new URL(urls[0]);
-
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
@@ -195,10 +203,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             recyclerAdapter.setMovies(result);
             recyclerAdapter.notifyDataSetChanged();
             refreshLayout.setRefreshing(false);
+            StoreMoviesDBTask storeTask = new StoreMoviesDBTask();
+            storeTask.execute();
         }
     }
 
-    public class StoreMoviesDBTask extends AsyncTask<ArrayList<Movie>,Void,ArrayList<Movie>>
+    public class StoreMoviesDBTask extends AsyncTask<Void,Void,ArrayList<Movie>>
     {
         @Override
         protected void onPreExecute() {
@@ -206,9 +216,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         }
 
         @Override
-        protected ArrayList<Movie>  doInBackground(ArrayList<Movie>... movieLists) {
+        protected ArrayList<Movie>  doInBackground(Void... voids) {
 
-            int stored = getContentResolver().bulkInsert(MovieDBContract.MovieEntry.CONTENT_URI,Utils.prepareToStoreMovies(movieLists[0]));
+            int stored = getContentResolver().bulkInsert(MovieDBContract.MovieEntry.CONTENT_URI,Utils.prepareToStoreMovies(movies,currentSortPop));
             Log.d("AAKASH","Number of stored "+stored);
             return null;    //change later
         }
@@ -216,10 +226,41 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         @Override
         protected void onPostExecute(ArrayList<Movie> result) {
             super.onPostExecute(result);
+        }
+    }
+
+    public class ReadMoviesDBTask extends AsyncTask<String,Void,ArrayList<Movie>>
+    {
+        @Override
+        protected void onPreExecute() {
+
+        }
+
+        @Override
+        protected ArrayList<Movie>  doInBackground(String... urls) {
+            int sortValue;
+
+            if(urls[0].equals(Constants.GET_MOVIES_POP_URL)) {
+                sortValue = 1;
+                currentSortPop = true;
+            }
+            else {
+                sortValue = 0;
+                currentSortPop = false;
+            }
+
+            Cursor c = getContentResolver().query(MovieDBContract.MovieEntry.CONTENT_URI, null,MovieDBContract.MovieEntry.COLUMN_SORTPOP+" = "+sortValue, null, null);
+            ArrayList<Movie> dbMovies = Utils.readMoviesFromCursor(c);
+
+            return dbMovies;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Movie> result) {
+            super.onPostExecute(result);
             movies = result;
-//            recyclerAdapter.setMovies(result);
-//            recyclerAdapter.notifyDataSetChanged();
-//            refreshLayout.setRefreshing(false);
+            recyclerAdapter.setMovies(result);
+            recyclerAdapter.notifyDataSetChanged();
         }
     }
 }

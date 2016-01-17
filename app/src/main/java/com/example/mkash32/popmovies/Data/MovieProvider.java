@@ -76,7 +76,7 @@ public class MovieProvider extends ContentProvider {
         switch (uriMatcher.match(uri))
         {
             case ALL_MOVIES:
-                cursor = getAllMovies();
+                cursor = getAllMovies(selection);
                 break;
             case MOVIE_GIVEN_ID:
                 cursor = getMovieById(uri);
@@ -131,12 +131,12 @@ public class MovieProvider extends ContentProvider {
     }
 
 
-    private Cursor getAllMovies(){
+    private Cursor getAllMovies(String selection){
 
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(MovieDBContract.MovieEntry.TABLE_NAME);
 
-        Cursor c = queryBuilder.query(dbHelper.getReadableDatabase(),null,null,null,null,null,null);
+        Cursor c = queryBuilder.query(dbHelper.getReadableDatabase(),null,selection,null,null,null,null);
         return c;
     }
 }

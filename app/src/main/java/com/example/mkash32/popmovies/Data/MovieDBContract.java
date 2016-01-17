@@ -38,6 +38,7 @@ public class MovieDBContract {
         public static final String COLUMN_RUNTIME = "runtime";
         public static final String COLUMN_VOTE = "vote_avg";
         public static final String COLUMN_POPULARITY = "popularity";
+        public static final String COLUMN_SORTPOP = "sort_by_popular";
 
 
         public static Uri buildMovieUri(long id) {

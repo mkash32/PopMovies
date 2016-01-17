@@ -24,6 +24,8 @@ public class Movie {
         this.releaseDate = releaseDate;
         this.popularity = popularity;
         this.posterPath = posterPath;
+        this.runtime = -1;
+
     }
 
     public Movie(String id, String title, String imagePath, String releaseDate, String posterPath, String overview, double popularity,double vote_avg, int runtime) {

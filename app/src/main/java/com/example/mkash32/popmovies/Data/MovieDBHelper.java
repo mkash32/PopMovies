@@ -29,7 +29,8 @@ public class MovieDBHelper extends SQLiteOpenHelper {
                 + MovieDBContract.MovieEntry.COLUMN_OVERVIEW + " TEXT, "
                 + MovieDBContract.MovieEntry.COLUMN_RUNTIME + " INTEGER, "
                 + MovieDBContract.MovieEntry.COLUMN_VOTE + " FLOAT, "
-                + MovieDBContract.MovieEntry.COLUMN_POPULARITY + " FLOAT "
+                + MovieDBContract.MovieEntry.COLUMN_POPULARITY + " FLOAT, "
+                + MovieDBContract.MovieEntry.COLUMN_SORTPOP + " INTEGER "
                 +")";
         sqLiteDatabase.execSQL(CREATE_MOVIES_TABLE);
 

@@ -1,13 +1,11 @@
 package com.example.mkash32.popmovies.Activities;
 
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.view.ActionProvider;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -17,14 +15,11 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ImageView;
-import android.widget.RatingBar;
-import android.widget.ShareActionProvider;
-import android.widget.TextView;
 
 import com.example.mkash32.popmovies.Adapters.MovieDetailsAdapter;
 import com.example.mkash32.popmovies.Constants;
+import com.example.mkash32.popmovies.Data.MovieDBContract;
 import com.example.mkash32.popmovies.Movie;
 import com.example.mkash32.popmovies.R;
 import com.example.mkash32.popmovies.Utils;
@@ -45,6 +40,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     private Movie movie;
     private ImageView image;
+    private String id;
     private MovieDetailsAdapter adapter;
     private android.support.v7.widget.ShareActionProvider shareActionProvider;
 
@@ -59,7 +55,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         this.setTitle(getIntent().getStringExtra("title"));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        String id = getIntent().getStringExtra("id");
+        id = getIntent().getStringExtra("id");
 
         image = (ImageView) findViewById(R.id.image_parallax);
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler);
@@ -88,6 +84,13 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private void setShareIntent()
     {
         if(shareActionProvider != null){
+
+            if(movie.getTrailers().isEmpty())
+            {
+                shareActionProvider.setShareIntent(null);   //disables share action provider
+                return;
+            }
+
             String[] trailer = movie.getTrailers().get(0).split(";");
             Intent shareIntent = new Intent();
             shareIntent.setType("text/plain");
@@ -103,16 +106,21 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private void fetchMovieDetails(final String id) {
         //close activity if there is no internet connection
         if(!Utils.isNetworkAvailable(this)){
-            new AlertDialog.Builder(this)
-                    .setTitle("Connection problem")
-                    .setMessage("Please fix your connection and try again")
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            finish();
-                        }
-                    })
-                    .setIcon(R.drawable.ic_action_offline)
+//            new AlertDialog.Builder(this)
+//                    .setTitle("Connection problem")
+//                    .setMessage("Please fix your connection and try again")
+//                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            finish();
+//                        }
+//                    })
+//                    .setIcon(R.drawable.ic_action_offline)
+//                    .show();
+            Snackbar.make(findViewById(android.R.id.content), "No internet connection", Snackbar.LENGTH_LONG)
                     .show();
+
+            ReadMovieDBTask task = new ReadMovieDBTask();
+            task.execute(id);
         }
         else {
             FetchMovieDetailsTask task = new FetchMovieDetailsTask();
@@ -200,6 +208,32 @@ public class MovieDetailsActivity extends AppCompatActivity {
             adapter.setMovie(movie);
             adapter.notifyDataSetChanged();
             setShareIntent();
+        }
+    }
+
+    public class ReadMovieDBTask extends AsyncTask<String,Void,Movie> {
+        @Override
+        protected void onPreExecute() {
+
+        }
+
+        @Override
+        protected Movie doInBackground(String... ids) {
+
+            Cursor c = getContentResolver().query(MovieDBContract.MovieEntry.buildMovieUri(Long.parseLong(ids[0])), null, null, null, null);
+            Movie dbMovie = Utils.readMovieFromCursor(c);
+
+            return dbMovie;
+        }
+
+        @Override
+        protected void onPostExecute(Movie result) {
+            super.onPostExecute(result);
+            movie = result;
+            adapter.setMovie(movie);
+            adapter.notifyDataSetChanged();
+            setShareIntent();
+            Log.d("AAKASH",movie.getOverview());
         }
     }
 }

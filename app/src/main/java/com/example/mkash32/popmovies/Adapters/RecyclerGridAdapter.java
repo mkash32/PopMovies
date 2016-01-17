@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,8 +28,7 @@ public class RecyclerGridAdapter extends RecyclerView.Adapter<RecyclerGridAdapte
     private Context c;
 
     public RecyclerGridAdapter(ArrayList<Movie> movies, Context c) {
-        if(movies == null)
-            Log.d("Movies","movies is null");
+
         this.movies = movies;
         this.c = c;
     }
