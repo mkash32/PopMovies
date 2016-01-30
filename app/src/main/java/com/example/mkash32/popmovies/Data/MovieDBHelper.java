@@ -34,6 +34,12 @@ public class MovieDBHelper extends SQLiteOpenHelper {
                 +")";
         sqLiteDatabase.execSQL(CREATE_MOVIES_TABLE);
 
+        String CREATE_FAVORITES_TABLE = "CREATE TABLE "+ MovieDBContract.FavoritesEntry.TABLE_NAME+"("
+                + MovieDBContract.FavoritesEntry.COLUMN_ID + " INTEGER PRIMARY KEY, "
+                + "FOREIGN KEY ("+MovieDBContract.FavoritesEntry.COLUMN_ID+") REFERENCES "
+                +MovieDBContract.MovieEntry.TABLE_NAME+ "("+MovieDBContract.MovieEntry.COLUMN_ID+"))";
+        sqLiteDatabase.execSQL(CREATE_FAVORITES_TABLE);
+
     }
 
     @Override

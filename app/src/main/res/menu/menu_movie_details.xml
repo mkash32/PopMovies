@@ -9,4 +9,10 @@
         app:showAsAction="always"
         app:actionProviderClass="android.support.v7.widget.ShareActionProvider"
         />
+    <item
+        android:id="@+id/action_favorites"
+        android:title="@string/action_favorites"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_action_favorite"
+        />
 </menu>

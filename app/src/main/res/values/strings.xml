@@ -4,6 +4,7 @@
     <string name="action_about">About</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_share">Share</string>
+    <string name="action_favorites">Favorite</string>
     <string name="title_activity_movie_details">MovieDetailsActivity</string>
 
     <string name="retry">Retry</string>

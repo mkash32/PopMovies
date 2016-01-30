@@ -22,6 +22,7 @@ public class Constants {
     public static String STANDARD_WIDTH = "/w185";
     public static String WIDE = "/w342";
 
+    public static String FAVORITES_URL = "favorites_url";   //indicator for favorites in ReadMovies AsyncTask
 
     //Final URL tempelates
     public static String GET_MOVIES_POP_URL = MOVIE_BASE_ADDRESS+POPULAR_MOVIES+SORT_BY_POPULARITY+"&"+API_KEY;

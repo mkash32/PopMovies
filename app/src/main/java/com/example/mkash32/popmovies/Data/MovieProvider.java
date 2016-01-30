@@ -4,7 +4,9 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQuery;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
@@ -15,6 +17,7 @@ public class MovieProvider extends ContentProvider {
 
     private static final int ALL_MOVIES = 100;
     private static final int MOVIE_GIVEN_ID = 101;
+    private static final int FAVORITES = 102;
 
     public MovieProvider() {
     }
@@ -27,6 +30,8 @@ public class MovieProvider extends ContentProvider {
         //adding the uris to the matcher
         matcher.addURI(authority,MovieDBContract.PATH_MOVIE, ALL_MOVIES);
         matcher.addURI(authority,MovieDBContract.PATH_MOVIE+"/#",MOVIE_GIVEN_ID);
+
+        matcher.addURI(authority,MovieDBContract.PATH_FAVORITES,FAVORITES);
 
         return matcher;
     }
@@ -48,6 +53,8 @@ public class MovieProvider extends ContentProvider {
                 return MovieDBContract.MovieEntry.CONTENT_TYPE;
             case MOVIE_GIVEN_ID:
                 return MovieDBContract.MovieEntry.CONTENT_ITEM_TYPE;
+            case FAVORITES:
+                return MovieDBContract.FavoritesEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: "+uri);
         }
@@ -57,7 +64,14 @@ public class MovieProvider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues values) {
         // TODO: Implement this to handle requests to insert a new row.
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        long _id = db.insert(MovieDBContract.MovieEntry.TABLE_NAME, null, values);
+
+        String tableName = null;
+        if(uriMatcher.match(uri) == MOVIE_GIVEN_ID)
+            tableName = MovieDBContract.MovieEntry.TABLE_NAME;
+        else
+            tableName = MovieDBContract.FavoritesEntry.TABLE_NAME;
+
+        long _id = db.insertOrThrow(tableName, null, values);
         getContext().getContentResolver().notifyChange(uri,null);
         return MovieDBContract.MovieEntry.buildMovieUri(_id);
     }
@@ -80,6 +94,9 @@ public class MovieProvider extends ContentProvider {
                 break;
             case MOVIE_GIVEN_ID:
                 cursor = getMovieById(uri);
+                break;
+            case FAVORITES:
+                cursor = getFavorites();
                 break;
         }
 
@@ -106,9 +123,15 @@ public class MovieProvider extends ContentProvider {
         try {
 
             for (int i = 0; i < values.length; i++) {
-                long _id = db.insert(MovieDBContract.MovieEntry.TABLE_NAME,null,values[i]);
-                if(_id != -1)
-                    successfulStore++;
+                try {
+                    long _id = db.insertOrThrow(MovieDBContract.MovieEntry.TABLE_NAME,null,values[i]);
+                    if(_id != -1)
+                        successfulStore++;
+                }catch (SQLiteConstraintException e)
+                {
+                    //don't log any error if there is a conflict with the UNIQUE constraint
+                }
+
             }
             db.setTransactionSuccessful();
         }finally {
@@ -120,7 +143,6 @@ public class MovieProvider extends ContentProvider {
     }
 
     //helper methods
-
     private Cursor getMovieById(Uri uri){
         String movieId = MovieDBContract.getMovieIdFromUri(uri);
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
@@ -130,13 +152,21 @@ public class MovieProvider extends ContentProvider {
         return c;
     }
 
-
     private Cursor getAllMovies(String selection){
 
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(MovieDBContract.MovieEntry.TABLE_NAME);
 
         Cursor c = queryBuilder.query(dbHelper.getReadableDatabase(),null,selection,null,null,null,null);
+        return c;
+    }
+
+    private Cursor getFavorites(){
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String query = "SELECT * FROM " +MovieDBContract.MovieEntry.TABLE_NAME+ " m"
+                +" INNER JOIN " + MovieDBContract.FavoritesEntry.TABLE_NAME+ " f"
+                +" ON m."+MovieDBContract.MovieEntry.COLUMN_ID+"=f."+MovieDBContract.FavoritesEntry.COLUMN_ID;
+        Cursor c = db.rawQuery(query,null);
         return c;
     }
 }

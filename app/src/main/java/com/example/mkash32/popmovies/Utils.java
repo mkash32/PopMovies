@@ -164,10 +164,9 @@ public class Utils {
         return readMoviesFromCursor(c).get(0);
     }
 
-    public static ContentValues[] prepareToStoreMovies(ArrayList<Movie> movies, boolean sortPop)
+    public static ContentValues[] prepareToStoreMovies(ArrayList<Movie> movies, int displaySetting)
     {
         ContentValues[] values = new ContentValues[movies.size()];
-        int sortPopInt = sortPop?1:0;
 
         for(int i=0;i<movies.size();i++)
         {
@@ -182,12 +181,18 @@ public class Utils {
                 value.put(MovieDBContract.MovieEntry.COLUMN_RUNTIME,movie.getRuntime());
                 value.put(MovieDBContract.MovieEntry.COLUMN_VOTE,movie.getVote_avg());
                 value.put(MovieDBContract.MovieEntry.COLUMN_POPULARITY,movie.getPopularity());
-                value.put(MovieDBContract.MovieEntry.COLUMN_SORTPOP,sortPopInt);
+                value.put(MovieDBContract.MovieEntry.COLUMN_SORTPOP,displaySetting);
 
                 values[i] = value;
         }
 
         return values;
+    }
+
+    public static ContentValues preparetoSaveFavorite(String id){
+        ContentValues value = new ContentValues();
+        value.put(MovieDBContract.FavoritesEntry.COLUMN_ID,id);
+        return value;
     }
 
 

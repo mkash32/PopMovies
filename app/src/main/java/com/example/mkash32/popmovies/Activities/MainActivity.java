@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private TextView errorTV;
     private RecyclerGridAdapter recyclerAdapter;
     private SwipeRefreshLayout refreshLayout;
-    private boolean currentSortPop = true;  //current sorted state, initially will be sorted by popularity
+    private int displaySetting = 0; //0-Popular Movies, 1-Highest Rated, 2 - Favorites
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +67,16 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         setSupportActionBar(toolbar);
 
-        fetchMovies(Constants.GET_MOVIES_POP_URL);
+        if(savedInstanceState != null)
+            displaySetting = savedInstanceState.getInt("display");
+
+        fetchMovies();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("display",displaySetting);
     }
 
     @Override
@@ -97,34 +106,57 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             refreshLayout.setRefreshing(true);
             onRefresh();
         }
-        else if(id == R.id.movieSortPop && !currentSortPop){
-            fetchMovies(Constants.GET_MOVIES_POP_URL);
+        else if(id == R.id.movieSortPop && displaySetting != 0){
+            displaySetting = 0;
+            fetchMovies();
         }
-        else if(id == R.id.movieSortRating){
-            fetchMovies(Constants.GET_MOVIES_RATED_URL);
+        else if(id == R.id.movieSortRating && displaySetting != 1){
+            displaySetting = 1;
+            fetchMovies();
+        }
+        else if(id == R.id.favorite && displaySetting != 2){
+            displaySetting = 2;
+            fetchMovies();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void fetchMovies(final String url){
-        if(!Utils.isNetworkAvailable(this)){
-            refreshLayout.setRefreshing(false);
-            Snackbar.make(findViewById(android.R.id.content), "No internet connection", Snackbar.LENGTH_LONG)
-                    .show();
+    private void fetchMovies() {
+
+        if(displaySetting == 2 )    //favorites
+        {
             ReadMoviesDBTask readMoviesFromDB = new ReadMoviesDBTask();
-            readMoviesFromDB.execute(url);
+            readMoviesFromDB.execute(Constants.FAVORITES_URL);
         }
-        else {
-            FetchMoviesTask fmt = new FetchMoviesTask();
-            fmt.execute(url);
+        else
+        {
+            String url = displaySetting == 0 ? Constants.GET_MOVIES_POP_URL : Constants.GET_MOVIES_RATED_URL;
+            if(!Utils.isNetworkAvailable(this)){
+                refreshLayout.setRefreshing(false);
+                Snackbar.make(findViewById(android.R.id.content), "No internet connection", Snackbar.LENGTH_LONG)
+                        .show();
+                ReadMoviesDBTask readMoviesFromDB = new ReadMoviesDBTask();
+                readMoviesFromDB.execute(url);
+            }
+            else {
+                FetchMoviesTask fmt = new FetchMoviesTask();
+                fmt.execute(url);
+            }
         }
+
     }
 
     @Override
     public void onRefresh() {
-        String url = currentSortPop?Constants.GET_MOVIES_POP_URL:Constants.GET_MOVIES_RATED_URL;
-        fetchMovies(url);
+
+        if(displaySetting == 2)           //don't need to refresh for favorites because there wont be any changes in db
+        {
+            refreshLayout.setRefreshing(false);
+            return;
+        }
+
+        fetchMovies();
     }
 
     public class FetchMoviesTask extends AsyncTask<String,Void,ArrayList<Movie>>
@@ -176,10 +208,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                         Log.e("PlaceholderFragment", "Error closing stream", e);
                     }
                 }
-                if(urls[0].equals(Constants.GET_MOVIES_POP_URL))
-                    currentSortPop = true;
-                else
-                    currentSortPop = false;
             }
 
             //Converting string into JSON and parsing into Movie Objects
@@ -208,24 +236,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         }
     }
 
-    public class StoreMoviesDBTask extends AsyncTask<Void,Void,ArrayList<Movie>>
+    public class StoreMoviesDBTask extends AsyncTask<Void,Void,Void>
     {
         @Override
-        protected void onPreExecute() {
+        protected Void doInBackground(Void... voids) {
 
-        }
-
-        @Override
-        protected ArrayList<Movie>  doInBackground(Void... voids) {
-
-            int stored = getContentResolver().bulkInsert(MovieDBContract.MovieEntry.CONTENT_URI,Utils.prepareToStoreMovies(movies,currentSortPop));
-            Log.d("AAKASH","Number of stored "+stored);
-            return null;    //change later
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Movie> result) {
-            super.onPostExecute(result);
+            int stored = getContentResolver().bulkInsert(MovieDBContract.MovieEntry.CONTENT_URI,Utils.prepareToStoreMovies(movies,displaySetting));
+            return null;
         }
     }
 
@@ -239,17 +256,23 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         @Override
         protected ArrayList<Movie>  doInBackground(String... urls) {
             int sortValue;
-
-            if(urls[0].equals(Constants.GET_MOVIES_POP_URL)) {
-                sortValue = 1;
-                currentSortPop = true;
+            Cursor c = null;
+            if(urls[0].equals(Constants.FAVORITES_URL))
+            {
+                displaySetting = 2;
+                c = getContentResolver().query(MovieDBContract.FavoritesEntry.CONTENT_URI, null, null, null, null);
             }
-            else {
-                sortValue = 0;
-                currentSortPop = false;
+            else
+            {
+                if(urls[0].equals(Constants.GET_MOVIES_POP_URL))
+                    displaySetting = 0;
+                else
+                    displaySetting = 1;
+
+                c = getContentResolver().query(MovieDBContract.MovieEntry.CONTENT_URI, null,MovieDBContract.MovieEntry.COLUMN_SORTPOP+" = "+displaySetting, null, null);
             }
 
-            Cursor c = getContentResolver().query(MovieDBContract.MovieEntry.CONTENT_URI, null,MovieDBContract.MovieEntry.COLUMN_SORTPOP+" = "+sortValue, null, null);
+
             ArrayList<Movie> dbMovies = Utils.readMoviesFromCursor(c);
 
             return dbMovies;

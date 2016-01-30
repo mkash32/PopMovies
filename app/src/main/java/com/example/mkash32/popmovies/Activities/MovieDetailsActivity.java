@@ -1,8 +1,11 @@
 package com.example.mkash32.popmovies.Activities;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -16,6 +19,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.example.mkash32.popmovies.Adapters.MovieDetailsAdapter;
 import com.example.mkash32.popmovies.Constants;
@@ -43,6 +47,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private String id;
     private MovieDetailsAdapter adapter;
     private android.support.v7.widget.ShareActionProvider shareActionProvider;
+    private Context context = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +84,19 @@ public class MovieDetailsActivity extends AppCompatActivity {
         shareActionProvider = (android.support.v7.widget.ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
 
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_favorites && movie != null) {
+            SaveFavoriteDBTask task = new SaveFavoriteDBTask();
+            task.execute(movie.getId());
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void setShareIntent()
@@ -233,7 +251,28 @@ public class MovieDetailsActivity extends AppCompatActivity {
             adapter.setMovie(movie);
             adapter.notifyDataSetChanged();
             setShareIntent();
-            Log.d("AAKASH",movie.getOverview());
+            Log.d("AAKASH", movie.getOverview());
+        }
+    }
+
+    public class SaveFavoriteDBTask extends AsyncTask<String,Void,Boolean> {
+        @Override
+        protected Boolean doInBackground(String... ids) {
+            try {
+                getContentResolver().insert(MovieDBContract.FavoritesEntry.CONTENT_URI, Utils.preparetoSaveFavorite(ids[0]));
+            }catch (SQLiteConstraintException exception){
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if(success)
+                Toast.makeText(context,"Saved as Favorite",Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(context,"Already saved!",Toast.LENGTH_SHORT).show();
         }
     }
 }

@@ -16,6 +16,8 @@ public class MovieDBContract {
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://"+CONTENT_AUTHORITY);
 
     public static final String PATH_MOVIE = "movie";
+    public static final String PATH_FAVORITES = "favorites";
+
 
     public static final class MovieEntry implements BaseColumns
     {
@@ -44,6 +46,22 @@ public class MovieDBContract {
         public static Uri buildMovieUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI,id);
         }
+    }
+
+    public static final class FavoritesEntry implements BaseColumns
+    {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_FAVORITES).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE+"/"+CONTENT_AUTHORITY+PATH_FAVORITES;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE+"/"+CONTENT_AUTHORITY+PATH_FAVORITES;
+
+        public static final String TABLE_NAME = "favorites";
+
+        public static final String COLUMN_ID = "_id";
+
     }
 
     public static String getMovieIdFromUri(Uri uri)
