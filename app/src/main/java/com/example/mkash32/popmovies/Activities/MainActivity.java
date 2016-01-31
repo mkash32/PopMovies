@@ -1,82 +1,28 @@
 package com.example.mkash32.popmovies.Activities;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.mkash32.popmovies.Constants;
 import com.example.mkash32.popmovies.Movie;
-import com.example.mkash32.popmovies.Data.MovieDBContract;
+import com.example.mkash32.popmovies.Fragments.MoviesListFragment;
 import com.example.mkash32.popmovies.R;
-import com.example.mkash32.popmovies.Adapters.RecyclerGridAdapter;
-import com.example.mkash32.popmovies.Utils;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+public class MainActivity extends AppCompatActivity implements MoviesListFragment.OnFragmentInteractionListener{
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-
-public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener{
-
-    private ArrayList<Movie> movies = new ArrayList<Movie>();
-    private Activity activity;
-    private RecyclerView recyclerGrid;
-    private TextView errorTV;
-    private RecyclerGridAdapter recyclerAdapter;
-    private SwipeRefreshLayout refreshLayout;
-    private int displaySetting = 0; //0-Popular Movies, 1-Highest Rated, 2 - Favorites
-
+    private MoviesListFragment moviesListFrag;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        activity = this;
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        errorTV = (TextView) findViewById(R.id.tv_error);
-        recyclerGrid = (RecyclerView) findViewById(R.id.recycler_grid);
-        recyclerGrid.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-
-        movies.size();
-        recyclerAdapter = new RecyclerGridAdapter(movies,this);
-        recyclerGrid.setAdapter(recyclerAdapter);
-
-        refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
-        refreshLayout.setOnRefreshListener(this);
-        refreshLayout.setColorSchemeResources(R.color.colorAccent);
 
         setSupportActionBar(toolbar);
 
-        if(savedInstanceState != null)
-            displaySetting = savedInstanceState.getInt("display");
-
-        fetchMovies();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt("display",displaySetting);
+        moviesListFrag =(MoviesListFragment) getSupportFragmentManager().findFragmentById(R.id.movie_list_frag);
     }
 
     @Override
@@ -103,187 +49,26 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             return true;
         }
         else if(id == R.id.action_refresh){
-            refreshLayout.setRefreshing(true);
-            onRefresh();
+            moviesListFrag.onRefresh();
         }
-        else if(id == R.id.movieSortPop && displaySetting != 0){
-            displaySetting = 0;
-            fetchMovies();
+        else if(id == R.id.movieSortPop && moviesListFrag.getDisplaySetting() != 0){
+            moviesListFrag.setDisplaySetting(0);
+            moviesListFrag.fetchMovies();
         }
-        else if(id == R.id.movieSortRating && displaySetting != 1){
-            displaySetting = 1;
-            fetchMovies();
+        else if(id == R.id.movieSortRating && moviesListFrag.getDisplaySetting() != 1){
+            moviesListFrag.setDisplaySetting(1);
+            moviesListFrag.fetchMovies();
         }
-        else if(id == R.id.favorite && displaySetting != 2){
-            displaySetting = 2;
-            fetchMovies();
+        else if(id == R.id.favorite && moviesListFrag.getDisplaySetting() != 2){
+            moviesListFrag.setDisplaySetting(2);
+            moviesListFrag.fetchMovies();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void fetchMovies() {
-
-        if(displaySetting == 2 )    //favorites
-        {
-            ReadMoviesDBTask readMoviesFromDB = new ReadMoviesDBTask();
-            readMoviesFromDB.execute(Constants.FAVORITES_URL);
-        }
-        else
-        {
-            String url = displaySetting == 0 ? Constants.GET_MOVIES_POP_URL : Constants.GET_MOVIES_RATED_URL;
-            if(!Utils.isNetworkAvailable(this)){
-                refreshLayout.setRefreshing(false);
-                Snackbar.make(findViewById(android.R.id.content), "No internet connection", Snackbar.LENGTH_LONG)
-                        .show();
-                ReadMoviesDBTask readMoviesFromDB = new ReadMoviesDBTask();
-                readMoviesFromDB.execute(url);
-            }
-            else {
-                FetchMoviesTask fmt = new FetchMoviesTask();
-                fmt.execute(url);
-            }
-        }
-
-    }
-
     @Override
-    public void onRefresh() {
+    public void onMovieSelected(Movie movie) {
 
-        if(displaySetting == 2)           //don't need to refresh for favorites because there wont be any changes in db
-        {
-            refreshLayout.setRefreshing(false);
-            return;
-        }
-
-        fetchMovies();
-    }
-
-    public class FetchMoviesTask extends AsyncTask<String,Void,ArrayList<Movie>>
-    {
-        @Override
-        protected void onPreExecute() {
-        }
-
-        @Override
-        protected ArrayList<Movie>  doInBackground(String... urls) {
-
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-            String responseString = "";
-
-            try {
-                URL url = new URL(urls[0]);
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-
-                if (inputStream == null)
-                    return null;
-
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null)
-                    buffer.append(line + "\n");
-
-                if (buffer.length() == 0)
-                    return null;
-
-                responseString = buffer.toString();
-            } catch (IOException e) {
-                Log.e("PlaceholderFragment", "Error ", e);
-                return null;
-            } finally{
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e("PlaceholderFragment", "Error closing stream", e);
-                    }
-                }
-            }
-
-            //Converting string into JSON and parsing into Movie Objects
-            try {
-
-                JSONObject js = new JSONObject(responseString);
-                ArrayList<Movie> movies = Utils.parsePopularMovies(js);
-                return movies;
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Movie> result) {
-            super.onPostExecute(result);
-            movies = result;
-            recyclerAdapter.setMovies(result);
-            recyclerAdapter.notifyDataSetChanged();
-            refreshLayout.setRefreshing(false);
-            StoreMoviesDBTask storeTask = new StoreMoviesDBTask();
-            storeTask.execute();
-        }
-    }
-
-    public class StoreMoviesDBTask extends AsyncTask<Void,Void,Void>
-    {
-        @Override
-        protected Void doInBackground(Void... voids) {
-
-            int stored = getContentResolver().bulkInsert(MovieDBContract.MovieEntry.CONTENT_URI,Utils.prepareToStoreMovies(movies,displaySetting));
-            return null;
-        }
-    }
-
-    public class ReadMoviesDBTask extends AsyncTask<String,Void,ArrayList<Movie>>
-    {
-        @Override
-        protected void onPreExecute() {
-
-        }
-
-        @Override
-        protected ArrayList<Movie>  doInBackground(String... urls) {
-            int sortValue;
-            Cursor c = null;
-            if(urls[0].equals(Constants.FAVORITES_URL))
-            {
-                displaySetting = 2;
-                c = getContentResolver().query(MovieDBContract.FavoritesEntry.CONTENT_URI, null, null, null, null);
-            }
-            else
-            {
-                if(urls[0].equals(Constants.GET_MOVIES_POP_URL))
-                    displaySetting = 0;
-                else
-                    displaySetting = 1;
-
-                c = getContentResolver().query(MovieDBContract.MovieEntry.CONTENT_URI, null,MovieDBContract.MovieEntry.COLUMN_SORTPOP+" = "+displaySetting, null, null);
-            }
-
-
-            ArrayList<Movie> dbMovies = Utils.readMoviesFromCursor(c);
-
-            return dbMovies;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Movie> result) {
-            super.onPostExecute(result);
-            movies = result;
-            recyclerAdapter.setMovies(result);
-            recyclerAdapter.notifyDataSetChanged();
-        }
     }
 }
