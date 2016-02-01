@@ -27,7 +27,7 @@
             android:layout_height="100dp"
             android:text="string"
             android:background="#ffffff"
-            android:id="@+id/li_trailer"
+            android:id="@+id/tv_trailer"
             android:textSize="16sp"
             android:textColor="#000000"
             android:padding="10dp"

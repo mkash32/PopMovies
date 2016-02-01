@@ -16,7 +16,7 @@
         android:textColor="@color/colorPrimaryDark"
         android:background="#ffffff"
         android:padding="10dp"
-        android:id="@+id/li_title" />
+        android:id="@+id/tv_title" />
 
     <View
         android:layout_width="match_parent"

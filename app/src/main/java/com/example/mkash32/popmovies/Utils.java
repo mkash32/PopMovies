@@ -2,6 +2,7 @@ package com.example.mkash32.popmovies;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -136,6 +137,12 @@ public class Utils {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
+    public static boolean isTablet(Context context) {
+        return (context.getResources().getConfiguration().screenLayout
+                & Configuration.SCREENLAYOUT_SIZE_MASK)
+                >= Configuration.SCREENLAYOUT_SIZE_LARGE;
+    }
+
     public static ArrayList<Movie> readMoviesFromCursor(Cursor c){
         ArrayList<Movie> movies = new ArrayList<Movie>();
 
@@ -166,6 +173,9 @@ public class Utils {
 
     public static ContentValues[] prepareToStoreMovies(ArrayList<Movie> movies, int displaySetting)
     {
+        if(movies==null)
+            return null;
+
         ContentValues[] values = new ContentValues[movies.size()];
 
         for(int i=0;i<movies.size();i++)

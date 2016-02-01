@@ -5,4 +5,5 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:scaleType="fitXY"
-    android:background="@drawable/ic_movie"/>
+    android:background="@drawable/ic_movie"
+    android:id="@+id/image_poster"/>

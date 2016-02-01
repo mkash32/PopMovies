@@ -124,16 +124,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private void fetchMovieDetails(final String id) {
         //close activity if there is no internet connection
         if(!Utils.isNetworkAvailable(this)){
-//            new AlertDialog.Builder(this)
-//                    .setTitle("Connection problem")
-//                    .setMessage("Please fix your connection and try again")
-//                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            finish();
-//                        }
-//                    })
-//                    .setIcon(R.drawable.ic_action_offline)
-//                    .show();
             Snackbar.make(findViewById(android.R.id.content), "No internet connection", Snackbar.LENGTH_LONG)
                     .show();
 
@@ -251,7 +241,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
             adapter.setMovie(movie);
             adapter.notifyDataSetChanged();
             setShareIntent();
-            Log.d("AAKASH", movie.getOverview());
         }
     }
 

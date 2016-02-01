@@ -4,16 +4,21 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.mkash32.popmovies.Fragments.MovieDetailsFragment;
 import com.example.mkash32.popmovies.Movie;
 import com.example.mkash32.popmovies.Fragments.MoviesListFragment;
 import com.example.mkash32.popmovies.R;
+import com.example.mkash32.popmovies.Utils;
 
 public class MainActivity extends AppCompatActivity implements MoviesListFragment.OnFragmentInteractionListener{
 
     private MoviesListFragment moviesListFrag;
+    private MovieDetailsFragment movieDetailsFrag;
+    private boolean isTab;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,7 +27,12 @@ public class MainActivity extends AppCompatActivity implements MoviesListFragmen
 
         setSupportActionBar(toolbar);
 
+        isTab = Utils.isTablet(this);
+
         moviesListFrag =(MoviesListFragment) getSupportFragmentManager().findFragmentById(R.id.movie_list_frag);
+        if(isTab)
+            movieDetailsFrag =(MovieDetailsFragment) getSupportFragmentManager().findFragmentById(R.id.details_frag);
+
     }
 
     @Override
@@ -69,6 +79,6 @@ public class MainActivity extends AppCompatActivity implements MoviesListFragmen
 
     @Override
     public void onMovieSelected(Movie movie) {
-
+        movieDetailsFrag.setMovie(movie);
     }
 }

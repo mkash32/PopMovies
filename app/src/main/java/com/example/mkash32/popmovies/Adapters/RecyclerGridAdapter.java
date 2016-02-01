@@ -13,8 +13,10 @@ import android.widget.TextView;
 
 import com.example.mkash32.popmovies.Activities.MovieDetailsActivity;
 import com.example.mkash32.popmovies.Constants;
+import com.example.mkash32.popmovies.Fragments.MoviesListFragment;
 import com.example.mkash32.popmovies.Movie;
 import com.example.mkash32.popmovies.R;
+import com.example.mkash32.popmovies.Utils;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -26,11 +28,12 @@ public class RecyclerGridAdapter extends RecyclerView.Adapter<RecyclerGridAdapte
 
     private ArrayList<Movie> movies;
     private Context c;
+    private MoviesListFragment.OnFragmentInteractionListener mListener;
 
-    public RecyclerGridAdapter(ArrayList<Movie> movies, Context c) {
-
+    public RecyclerGridAdapter(ArrayList<Movie> movies, Context c, MoviesListFragment.OnFragmentInteractionListener mListener) {
         this.movies = movies;
         this.c = c;
+        this.mListener = mListener;
     }
 
     public void setMovies(ArrayList<Movie> movies) {
@@ -55,7 +58,10 @@ public class RecyclerGridAdapter extends RecyclerView.Adapter<RecyclerGridAdapte
 
     @Override
     public int getItemCount() {
-        return movies.size();
+        if(movies!=null)
+            return movies.size();
+        else
+            return 0;
     }
 
     public class RecyclerViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
@@ -95,11 +101,15 @@ public class RecyclerGridAdapter extends RecyclerView.Adapter<RecyclerGridAdapte
 
         @Override
         public void onClick(View view) {
-            Intent intent = new Intent(c, MovieDetailsActivity.class);
-            intent.putExtra("id",movie.getId());
-            intent.putExtra("title",movie.getTitle());
-            intent.putExtra("url",Constants.WIDE_IMAGE_URLTEMP+movie.getPosterPath());
-            c.startActivity(intent);
+            if(Utils.isTablet(c))
+                mListener.onMovieSelected(movie);       //alert activity that movie is selected
+            else {
+                Intent intent = new Intent(c, MovieDetailsActivity.class);
+                intent.putExtra("id", movie.getId());
+                intent.putExtra("title", movie.getTitle());
+                intent.putExtra("url", Constants.WIDE_IMAGE_URLTEMP + movie.getPosterPath());
+                c.startActivity(intent);
+            }
         }
     }
 }

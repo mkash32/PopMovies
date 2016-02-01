@@ -79,7 +79,7 @@ public class MoviesListFragment extends Fragment implements SwipeRefreshLayout.O
 
         recyclerGrid.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
 
-        recyclerAdapter = new RecyclerGridAdapter(movies,activity);
+        recyclerAdapter = new RecyclerGridAdapter(movies,activity,mListener);
         recyclerGrid.setAdapter(recyclerAdapter);
 
         refreshLayout.setOnRefreshListener(this);
@@ -125,8 +125,9 @@ public class MoviesListFragment extends Fragment implements SwipeRefreshLayout.O
             String url = displaySetting == 0 ? Constants.GET_MOVIES_POP_URL : Constants.GET_MOVIES_RATED_URL;
             if(!Utils.isNetworkAvailable(activity)){
                 refreshLayout.setRefreshing(false);
-                Snackbar.make(getView().findViewById(android.R.id.content), "No internet connection", Snackbar.LENGTH_LONG)
-                        .show();
+                if(getView()!=null)
+                    Snackbar.make(getView(), "No internet connection", Snackbar.LENGTH_LONG)
+                            .show();
                 ReadMoviesDBTask readMoviesFromDB = new ReadMoviesDBTask();
                 readMoviesFromDB.execute(url);
             }
@@ -190,7 +191,9 @@ public class MoviesListFragment extends Fragment implements SwipeRefreshLayout.O
             } catch (IOException e) {
                 Log.e("PlaceholderFragment", "Error ", e);
                 return null;
-            } finally{
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }finally{
                 if (urlConnection != null) {
                     urlConnection.disconnect();
                 }
@@ -212,6 +215,9 @@ public class MoviesListFragment extends Fragment implements SwipeRefreshLayout.O
 
             } catch (JSONException e) {
                 e.printStackTrace();
+            } catch (Exception ex)
+            {
+                ex.printStackTrace();
             }
 
             return null;
