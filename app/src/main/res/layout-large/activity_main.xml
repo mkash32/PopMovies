@@ -31,6 +31,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/movie_list_frag"
+                android:layout_margin="5dp"
                 android:layout_weight="2"
                 android:name="com.example.mkash32.popmovies.Fragments.MoviesListFragment"/>
 
@@ -38,6 +39,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:layout_margin="5dp"
                 android:id="@+id/details_frag"
                 android:name="com.example.mkash32.popmovies.Fragments.MovieDetailsFragment"/>
     </LinearLayout>

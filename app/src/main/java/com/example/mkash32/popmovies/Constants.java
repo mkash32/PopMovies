@@ -16,7 +16,7 @@ public class Constants {
         public static String SORT_BY_POPULARITY = "popularity.desc";
         public static String SORT_BY_HIGHEST_RATED = "vote_average.desc";
     public static String FIND_MOVIE = "/movie/#";
-        public static String APPEND_TO_RESPONSE = "&append_to_response=videos";
+        public static String APPEND_TO_RESPONSE = "&append_to_response=videos,reviews";
 
     public static String IMAGE_BASE_ADDRESS = "http://image.tmdb.org/t/p";
     public static String STANDARD_WIDTH = "/w185";

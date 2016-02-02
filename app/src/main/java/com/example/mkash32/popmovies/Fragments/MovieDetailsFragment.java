@@ -146,7 +146,6 @@ public class MovieDetailsFragment extends Fragment {
 
             //Converting string into JSON and parsing into Movie Object
             try {
-
                 JSONObject js = new JSONObject(responseString);
                 Movie movie = Utils.parseMovieDetails(js);
                 return movie;
@@ -162,8 +161,6 @@ public class MovieDetailsFragment extends Fragment {
         protected void onPostExecute(Movie result) {
             super.onPostExecute(result);
             movie = result;
-            Log.d("AAKASH","here");
-            id = movie.getId();
             adapter.setMovie(movie);
             adapter.notifyDataSetChanged();
         }
@@ -188,27 +185,6 @@ public class MovieDetailsFragment extends Fragment {
         }
     }
 
-    public class SaveFavoriteDBTask extends AsyncTask<String,Void,Boolean> {
-        @Override
-        protected Boolean doInBackground(String... ids) {
-            try {
-                getActivity().getContentResolver().insert(MovieDBContract.FavoritesEntry.CONTENT_URI, Utils.preparetoSaveFavorite(ids[0]));
-            }catch (SQLiteConstraintException exception){
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            super.onPostExecute(success);
-            if(success)
-                Toast.makeText(context, "Saved as Favorite", Toast.LENGTH_SHORT).show();
-            else
-                Toast.makeText(context,"Already saved!",Toast.LENGTH_SHORT).show();
-        }
-    }
-
     public void setMovie(Movie movie) {
         this.movie = movie;
         this.id = movie.getId();
@@ -219,10 +195,11 @@ public class MovieDetailsFragment extends Fragment {
             listView.setAdapter(adapter);
         }
         else {
+            //initial displaying of movie details
             adapter.setMovie(movie);
             adapter.notifyDataSetChanged();
         }
-
+        //movie details should be fetched again for Trailers
         fetchMovieDetails();
     }
 }

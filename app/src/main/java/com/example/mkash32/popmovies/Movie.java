@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class Movie {
 
     private String id,title,imagePath,releaseDate;  //Simple Movie data
-    private String posterPath, overview;
+    private String posterPath, overview,reviews;
     private double popularity,vote_avg;
     private int runtime;
     private ArrayList<String> trailers = new ArrayList<String>();     //Strings will be of the form name;key, seperation by semicolons
@@ -28,7 +28,7 @@ public class Movie {
 
     }
 
-    public Movie(String id, String title, String imagePath, String releaseDate, String posterPath, String overview, double popularity,double vote_avg, int runtime) {
+    public Movie(String id, String title, String imagePath, String releaseDate, String posterPath, String overview, double popularity,double vote_avg, int runtime, String reviews) {
         this.id = id;
         this.title = title;
         this.imagePath = imagePath;
@@ -38,6 +38,7 @@ public class Movie {
         this.popularity = popularity;
         this.vote_avg =vote_avg;
         this.runtime = runtime;
+        this.reviews = reviews;
     }
 
     public String getId() {
@@ -118,5 +119,13 @@ public class Movie {
 
     public void setTrailers(ArrayList<String> trailers) {
         this.trailers = trailers;
+    }
+
+    public String getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(String reviews) {
+        this.reviews = reviews;
     }
 }

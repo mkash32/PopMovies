@@ -44,7 +44,7 @@ public class Utils {
                 double vote_avg = movie.getDouble("vote_average");
 
 
-                movies.add(new Movie(id,title,imagePath,releaseDate,posterPath,overview,popularity,vote_avg,-1));
+                movies.add(new Movie(id,title,imagePath,releaseDate,posterPath,overview,popularity,vote_avg,-1,"Not Available"));
             }
 
             return movies;
@@ -67,6 +67,8 @@ public class Utils {
                 String imagePath = movieJSON.getString("backdrop_path");
                 String posterPath = movieJSON.getString("poster_path");
                 String overview = movieJSON.getString("overview");
+                String review = getReview(movieJSON.getJSONObject("reviews"));
+
                 int runtime;
                 try {
                     runtime = movieJSON.getInt("runtime");
@@ -74,7 +76,7 @@ public class Utils {
                 {
                     runtime= -1;
                 }
-                movie = new Movie(id,title,imagePath,releaseDate,posterPath,overview,popularity,vote_avg,runtime);
+                movie = new Movie(id,title,imagePath,releaseDate,posterPath,overview,popularity,vote_avg,runtime,review);
 
                 //Parse trailers and store into array list 'trailers' in the movie object
                 JSONArray videos = movieJSON.getJSONObject("videos").getJSONArray("results");
@@ -93,6 +95,24 @@ public class Utils {
         }
 
         return null;
+    }
+
+    public static String getReview(JSONObject reviewsObject)
+    {
+        String review = "";
+        try {
+            JSONArray results = reviewsObject.getJSONArray("results");
+            for(int i=0;i<results.length();i++)
+            {
+                JSONObject reviewItem = results.getJSONObject(i);
+                review += reviewItem.getString("author")+" : " + reviewItem.getString("content");
+                review += '\n';
+            }
+        } catch (JSONException e) {
+
+            e.printStackTrace();
+        }
+        return review;
     }
 
     public static String getMovieDetailsURL(String id)
@@ -158,7 +178,7 @@ public class Utils {
             int runtime = c.getInt(6);
             float vote_avg = c.getFloat(7);
             float popularity = c.getFloat(8);
-            movies.add(new Movie(id,title,image,releaseDate,poster,overview,popularity,vote_avg,runtime));
+            movies.add(new Movie(id,title,image,releaseDate,poster,overview,popularity,vote_avg,runtime,"Not Available"));
         }
 
         c.close();

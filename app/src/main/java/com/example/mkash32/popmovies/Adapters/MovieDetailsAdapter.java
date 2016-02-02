@@ -74,29 +74,26 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
     }
 
     public void setTrailers(RecyclerViewHolder holder, int position) {
-        if (position == 2)
-        {
+        if (position == 2) {
             holder.getTitle().setText("Trailers");
 
             holder.getTitleCard().setVisibility(View.VISIBLE);
             holder.getTrailerCard().setVisibility(View.GONE);
 
-            if(numberOfTrailers == 0)
+            if (numberOfTrailers == 0)
                 holder.content.setText("No trailers Available");
             else
                 holder.getContentCard().setVisibility(View.GONE);
-        }
-        else if(position <= 2 + numberOfTrailers)
-        {
+        } else if (position <= 2 + numberOfTrailers) {
             int i = position - 3;
-                String trailer = trailers.get(i);
-                final String[] info = trailer.split(";");
+            String trailer = trailers.get(i);
+            final String[] info = trailer.split(";");
 
-                trailerConfiguration(holder);
+            trailerConfiguration(holder);
 
-                holder.getTrailer().setText(info[0]);
+            holder.getTrailer().setText(info[0]);
 
-                Picasso.with(c).load(Utils.getVideoThumbnail(info[1])).into(holder.getVideoThumbnail());
+            Picasso.with(c).load(Utils.getVideoThumbnail(info[1])).into(holder.getVideoThumbnail());
 
 
             holder.getTrailerCard().setOnClickListener(new View.OnClickListener() {
@@ -105,6 +102,16 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
                     c.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.TRAILER_YOUTUBE + info[1])));
                 }
             });
+        } else      //reviews
+        {
+            TextView title = holder.getTitle();
+            TextView content = holder.getContent();
+            title.setText("Reviews");
+            if(movie.getReviews() == null || movie.getReviews().equals(""))
+                content.setText("Not Available");
+            else
+                content.setText(movie.getReviews());
+            descriptionConfiguration(holder);
         }
     }
 
@@ -134,7 +141,7 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
 
     @Override
     public int getItemCount() {
-        return 3 + numberOfTrailers;
+        return 4 + numberOfTrailers;
     }
 
     public class RecyclerViewHolder extends RecyclerView.ViewHolder
